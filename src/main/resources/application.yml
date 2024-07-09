@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: SpringSecurityJWT
+  datasource:
+    url: jdbc:mysql://localhost:3306/tailor?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: Avdevs@123
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format-sql: true
+      show-sql: true
+    open-in-view: true
+logging:
+  level:
+    org.springframework.security: TRACE
+
+secret:
+  jwt:
+    secret-key: fe7bd3291f24181c41da266c8ecacb8b949fa55610f32f7f165ad05a9c431623
+    expiration: 86400000
+    token-prefix: Bearer
+    header-string: Authorization
