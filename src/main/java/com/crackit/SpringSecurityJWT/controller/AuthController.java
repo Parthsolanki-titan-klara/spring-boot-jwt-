@@ -1,9 +1,7 @@
 package com.crackit.SpringSecurityJWT.controller;
 
 import com.crackit.SpringSecurityJWT.service.AuthenticationService;
-import com.crackit.SpringSecurityJWT.user.reponse.AuthentoictionResponse;
 import com.crackit.SpringSecurityJWT.user.reponse.GeneralResponse;
-import com.crackit.SpringSecurityJWT.user.request.LoginRequest;
 import com.crackit.SpringSecurityJWT.user.request.RegisterRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -12,14 +10,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -32,40 +29,43 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
-    public ResponseEntity<GeneralResponse> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<GeneralResponse> login(@RequestHeader("Authorization") String authHeader) {
         try {
-            System.out.println("login email : " + loginRequest.getEmail());
-            System.out.println("login password : " + loginRequest.getPassword());
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
-            );
-            if (authentication.isAuthenticated()) {
-                String email = authentication.getName();
-                String token = authenticationService.loginUser(email, loginRequest.getPassword());
-                Map<String, String> payload = Map.of("email", authentication.getName(), "token", token);
-                System.out.println("payload : " + payload);
-                return ResponseEntity.ok(new GeneralResponse(new ObjectMapper().writeValueAsString(payload), new Date(System.currentTimeMillis())));
+            if (authHeader != null && authHeader.startsWith("Basic ")) {
+                String base64Credentials = authHeader.substring("Basic ".length()).trim();
+                byte[] credDecoded = Base64.getDecoder().decode(base64Credentials);
+                String credentials = new String(credDecoded, StandardCharsets.UTF_8);
+                final String[] values = credentials.split(":", 2);
 
+                String email = values[0];
+                String password = values[1];
+
+                Authentication authentication = authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(email, password)
+                );
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                if (authentication.isAuthenticated()) {
+                    String token = authenticationService.loginUser(email, password);
+                    Map<String, String> payload = Map.of("email", email, "token", token);
+                    return ResponseEntity.ok(new GeneralResponse(new ObjectMapper().writeValueAsString(payload), new Date(System.currentTimeMillis())));
+                } else {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new GeneralResponse("Authentication failed", new Date()));
+                }
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new GeneralResponse("Authentication failed", new Date()));
-
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new GeneralResponse("Missing or invalid Authorization header", new Date()));
             }
         } catch (Exception e) {
+            SecurityContextHolder.clearContext();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new GeneralResponse("Bad credentials", new Date()));
-
         }
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthentoictionResponse> register(
+    public ResponseEntity<?> register(
             @RequestBody RegisterRequest authenticationRequest
     ) {
         System.out.println("Registering user");
         return ResponseEntity.ok(authenticationService.register(authenticationRequest));
     }
-
-    // create another api which is accessible using the token
-
-
-
 }

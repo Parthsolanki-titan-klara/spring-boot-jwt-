@@ -9,6 +9,6 @@ import lombok.RequiredArgsConstructor;
 @Builder
 @RequiredArgsConstructor
 @AllArgsConstructor
-public class AuthentoictionResponse {
+public class AuthenticationService {
     private String token;
 }
