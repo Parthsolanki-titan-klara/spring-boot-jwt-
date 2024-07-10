@@ -27,7 +27,7 @@ public class AuthControllerWithTokenValidation {
     @GetMapping("/protected")
     public ResponseEntity<?> accessProtectedResource(@RequestHeader("Authorization") String tokenHeader) {
         String token = extractToken(tokenHeader);
-        System.out.println("token : " + token);
+        System.out.println("token in main controller : " + token);
         if (token == null) {
             return createResponse("No token provided", HttpStatus.UNAUTHORIZED);
         }
@@ -49,7 +49,9 @@ public class AuthControllerWithTokenValidation {
 
     private String extractToken(String tokenHeader) {
         if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
-            return tokenHeader.substring(7);
+            String token = tokenHeader.substring(7);
+            System.out.println("Extract token : " + token);
+            return token;
         }
         return null;
     }

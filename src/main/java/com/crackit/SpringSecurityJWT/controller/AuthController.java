@@ -29,36 +29,27 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
-    public ResponseEntity<GeneralResponse> login(@RequestHeader("Authorization") String authHeader) {
-        try {
-            if (authHeader != null && authHeader.startsWith("Basic ")) {
-                String base64Credentials = authHeader.substring("Basic ".length()).trim();
-                byte[] credDecoded = Base64.getDecoder().decode(base64Credentials);
-                String credentials = new String(credDecoded, StandardCharsets.UTF_8);
-                final String[] values = credentials.split(":", 2);
+    public ResponseEntity<?> login(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Basic ")) {
+            String base64Credentials = authHeader.substring("Basic ".length()).trim();
+            byte[] credDecoded = Base64.getDecoder().decode(base64Credentials);
+            String credentials = new String(credDecoded, StandardCharsets.UTF_8);
+            final String[] values = credentials.split(":", 2);
 
+            if (values.length == 2) {
                 String email = values[0];
                 String password = values[1];
 
-                Authentication authentication = authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(email, password)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                if (authentication.isAuthenticated()) {
-                    String token = authenticationService.loginUser(email, password);
-                    Map<String, String> payload = Map.of("email", email, "token", token);
-                    return ResponseEntity.ok(new GeneralResponse(new ObjectMapper().writeValueAsString(payload), new Date(System.currentTimeMillis())));
-                } else {
+                try {
+                    ResponseEntity<?> response = authenticationService.loginUser(email, password);
+                    return response;
+                } catch (Exception e) {
+                    SecurityContextHolder.clearContext();
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new GeneralResponse("Authentication failed", new Date()));
                 }
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new GeneralResponse("Missing or invalid Authorization header", new Date()));
             }
-        } catch (Exception e) {
-            SecurityContextHolder.clearContext();
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new GeneralResponse("Bad credentials", new Date()));
         }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new GeneralResponse("Missing or invalid Authorization header", new Date()));
     }
 
     @PostMapping("/register")
