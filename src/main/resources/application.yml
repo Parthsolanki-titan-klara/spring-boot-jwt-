@@ -23,3 +23,12 @@ secret:
     expiration: 86400000
     token-prefix: Bearer
     header-string: Authorization
+
+cache:
+  size: 100000
+
+springdoc:
+  swagger-ui:
+    layout: "BaseLayout"
+    path: "/api-docs"
+    disable-swagger-default-url: true

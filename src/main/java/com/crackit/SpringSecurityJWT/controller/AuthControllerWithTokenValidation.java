@@ -3,6 +3,9 @@ package com.crackit.SpringSecurityJWT.controller;
 import com.crackit.SpringSecurityJWT.service.AuthenticationService;
 import com.crackit.SpringSecurityJWT.service.JwtService;
 import com.crackit.SpringSecurityJWT.user.reponse.GeneralResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +21,7 @@ import java.util.Date;
 @RestController
 @RequestMapping("/api/v1/test")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class AuthControllerWithTokenValidation {
 
     private final AuthenticationService authenticationService;
@@ -25,9 +29,11 @@ public class AuthControllerWithTokenValidation {
     private static final Logger logger = LoggerFactory.getLogger(AuthControllerWithTokenValidation.class);
 
     @GetMapping("/protected")
-    public ResponseEntity<?> accessProtectedResource(@RequestHeader("Authorization") String tokenHeader) {
-        String token = extractToken(tokenHeader);
-        System.out.println("token : " + token);
+    public ResponseEntity<?> accessProtectedResource(HttpServletRequest httpServletRequest) {
+        String authHeader = httpServletRequest.getHeader("Authorization");
+        System.out.println("authHeader : " + authHeader);
+        String token = extractToken(authHeader);
+        System.out.println("token in main controller : " + token);
         if (token == null) {
             return createResponse("No token provided", HttpStatus.UNAUTHORIZED);
         }
@@ -49,7 +55,9 @@ public class AuthControllerWithTokenValidation {
 
     private String extractToken(String tokenHeader) {
         if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
-            return tokenHeader.substring(7);
+            String token = tokenHeader.substring(7);
+            System.out.println("Extract token : " + token);
+            return token;
         }
         return null;
     }
