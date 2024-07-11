@@ -1,5 +1,6 @@
 package com.crackit.SpringSecurityJWT.service;
 
+import com.crackit.SpringSecurityJWT.constant.AppConstants;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -82,7 +83,7 @@ public class JwtService {
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
+                .setExpiration(new Date(System.currentTimeMillis() + AppConstants.JWT_EXPIRATION)) // 1000 * 60 means 1 minute time for token to expire
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

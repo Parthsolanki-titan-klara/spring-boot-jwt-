@@ -1,5 +1,6 @@
 package com.crackit.SpringSecurityJWT.filter;
 
+import com.crackit.SpringSecurityJWT.constant.AppConstants;
 import com.crackit.SpringSecurityJWT.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -29,10 +30,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        System.out.println();
-        String authHeader = request.getHeader("Authorization");
+        String authHeader = request.getHeader(AppConstants.HEADER_STRING);
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        if (authHeader != null && authHeader.startsWith(AppConstants.TOKEN_PREFIX)) {
             String jwtToken = authHeader.substring(7);
             String userName = jwtService.extractUserName(jwtToken);
 

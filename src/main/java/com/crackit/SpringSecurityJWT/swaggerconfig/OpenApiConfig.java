@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
         info = @Info(
                 contact = @Contact(
                         name = "Parth Solanki",
-                        url = "https://klara.ch"
+                        url = "https://parth.in"
                 ),
                 description = "OpenApi documentation for Demo webservices",
                 title = "Demo webservices",

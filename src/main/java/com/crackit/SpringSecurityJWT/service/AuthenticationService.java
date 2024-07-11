@@ -1,24 +1,17 @@
 package com.crackit.SpringSecurityJWT.service;
 
 import com.crackit.SpringSecurityJWT.cache.LRUCache;
+import com.crackit.SpringSecurityJWT.constant.AppConstants;
 import com.crackit.SpringSecurityJWT.user.User;
 import com.crackit.SpringSecurityJWT.user.UserRepository;
-import com.crackit.SpringSecurityJWT.user.reponse.GeneralResponse;
 import com.crackit.SpringSecurityJWT.user.request.RegisterRequest;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 
@@ -44,7 +37,7 @@ public class AuthenticationService {
         Optional<User> existingUser = userRepository.findByEmail(registerRequest.getEmail());
         Map<String, String> response;
         if (existingUser.isPresent()) {
-            response = Map.of("message", "User already exists");
+            response = Map.of(AppConstants.MESSAGE, AppConstants.USER_ALREADY_EXISTS);
         } else {
             // User does not exist, proceed with registration
             User newUser = User.builder()
@@ -66,7 +59,7 @@ public class AuthenticationService {
             User cachedUser = userCache.get(registerRequest.getEmail());
 
             System.out.println("Cached User at register time : " + cachedUser);
-            response = Map.of("token", jwtToken);
+            response = Map.of(AppConstants.TOKEN, jwtToken);
             return response;
         }
         return response;
@@ -94,12 +87,12 @@ public class AuthenticationService {
                 System.out.println("Cached User at login time : " + cachedUser);
                 String token = cachedUser.getToken();
                 if(passwordEncoder.matches(password, cachedUser.getPassword())){
-                    return Map.of("email", email, "token", token);
+                    return Map.of(AppConstants.EMAIL, email, AppConstants.TOKEN, token);
                 }
             }
         } else {
-            return Map.of("message", "Authentication failed");
+            return Map.of(AppConstants.MESSAGE, AppConstants.AUTH_FAILED);
         }
-        return Map.of("message", "Authentication failed");
+        return Map.of(AppConstants.MESSAGE, AppConstants.AUTH_FAILED);
     }
 }

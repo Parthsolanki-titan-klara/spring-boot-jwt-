@@ -17,13 +17,6 @@ logging:
   level:
     org.springframework.security: TRACE
 
-secret:
-  jwt:
-    secret-key: fe7bd3291f24181c41da266c8ecacb8b949fa55610f32f7f165ad05a9c431623
-    expiration: 86400000
-    token-prefix: Bearer
-    header-string: Authorization
-
 cache:
   size: 100000
 

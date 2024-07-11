@@ -1,5 +1,6 @@
 package com.crackit.SpringSecurityJWT.controller;
 
+import com.crackit.SpringSecurityJWT.constant.AppConstants;
 import com.crackit.SpringSecurityJWT.service.AuthenticationService;
 import com.crackit.SpringSecurityJWT.user.request.LoginRequest;
 import com.crackit.SpringSecurityJWT.user.request.RegisterRequest;
@@ -13,20 +14,20 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Register and Login documents",
-        description = "Register and Login documents service")
+@Tag(name = AppConstants.SWAGGER_REGISTER_LOGIN_TAG_NAME,
+        description = AppConstants.SWAGGER_REGISTER_LOGIN_TAG_DESCRIPTION)
 public class AuthController {
 
     private final AuthenticationService authenticationService;
 
-    @PostMapping("/api/v1/login")
+    @PostMapping(AppConstants.LOGIN_ENDPOINT)
     @ApiResponse(
-            responseCode = "200",
-            description = "Successfully logged In",
+            responseCode = AppConstants.STATUS_OK,
+            description = AppConstants.LOGIN_RESPONSE_DESCRIPTION,
             content = @Content(
-                    mediaType = "application/json",
+                    mediaType = AppConstants.RESPONSE_MEDIA_TYPE,
                     examples = @ExampleObject(
-                            value = "{\"token\":\"765677868767567547836432678278478234\", \"email\":\"user@example.com\"}"
+                            value = AppConstants.LOGIN_API_RESPONSE
                     )
             )
     )
@@ -34,14 +35,14 @@ public class AuthController {
         return authenticationService.loginUser(loginRequest.getEmail(), loginRequest.getPassword());
     }
 
-    @PostMapping(value = "api/v1/register", consumes = "application/json", produces = "application/json")
+    @PostMapping(value = AppConstants.REGISTER_ENDPOINT, consumes = AppConstants.RESPONSE_MEDIA_TYPE, produces = AppConstants.RESPONSE_MEDIA_TYPE)
     @ApiResponse(
-            responseCode = "200",
-            description = "Successfully registered",
+            responseCode = AppConstants.STATUS_OK,
+            description = AppConstants.REGISTER_RESPONSE_DESCRIPTION,
             content = @Content(
-                    mediaType = "application/json",
+                    mediaType = AppConstants.RESPONSE_MEDIA_TYPE,
                     examples = @ExampleObject(
-                            value = "{\"token\":\"765677868767567547836432678278478234\"}"
+                            value = AppConstants.REGISTER_API_RESPONSE
                     )
             )
     )
