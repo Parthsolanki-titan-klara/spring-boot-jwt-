@@ -25,3 +25,7 @@ springdoc:
     layout: "BaseLayout"
     path: "/api-docs"
     disable-swagger-default-url: true
+
+secret:
+    jwt:
+        secret-key: "fe7bd3291f24181c41da266c8ecacb8b949fa55610f32f7f165ad05a9c431623"

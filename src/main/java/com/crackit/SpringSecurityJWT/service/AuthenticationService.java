@@ -32,9 +32,10 @@ public class AuthenticationService {
      *
      * @param registerRequest
      * @return
-     */
+//     */
+
     public Map<String,String> register(RegisterRequest registerRequest) {
-        Optional<User> existingUser = userRepository.findByEmail(registerRequest.getEmail());
+        Optional<User> existingUser = userRepository.findByEmail(registerRequest.getEmail()); // TODO: Check if the user exists in the cache first
         Map<String, String> response;
         if (existingUser.isPresent()) {
             response = Map.of(AppConstants.MESSAGE, AppConstants.USER_ALREADY_EXISTS);

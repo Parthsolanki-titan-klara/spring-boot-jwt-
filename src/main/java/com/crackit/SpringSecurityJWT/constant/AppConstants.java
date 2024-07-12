@@ -3,7 +3,7 @@ package com.crackit.SpringSecurityJWT.constant;
 public class AppConstants {
 
     //JWT constants
-    public static final String JWT_SECRET_KEY = "fe7bd3291f24181c41da266c8ecacb8b949fa55610f32f7f165ad05a9c431623";
+//    public static final String JWT_SECRET_KEY = "fe7bd3291f24181c41da266c8ecacb8b949fa55610f32f7f165ad05a9c431623";
     public static final long JWT_EXPIRATION = 60000; // 1 minute
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String HEADER_STRING = "Authorization";
@@ -35,7 +35,7 @@ public class AppConstants {
     public static final String STATUS_ACCEPTED = "ACCEPTED";
 
     // Register constants
-    public static final String REGISTER_ENDPOINT = "/api/v1/auth/register";
+    public static final String REGISTER_ENDPOINT = "/api/v1/register";
 
     //Login constants
     public static final String LOGIN_ENDPOINT = "/api/v1/login";
