@@ -1,4 +1,4 @@
-package com.crackit.SpringSecurityJWT.user.request;
+package com.crackit.springsecurityjwt.user.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

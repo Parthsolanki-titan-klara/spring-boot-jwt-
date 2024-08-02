@@ -1,4 +1,4 @@
-package com.crackit.SpringSecurityJWT.user;
+package com.crackit.springsecurityjwt.user;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -34,6 +34,8 @@ public class User implements UserDetails {
     private UserRole userRole;
 
     private String token;
+
+    private String refreshToken;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

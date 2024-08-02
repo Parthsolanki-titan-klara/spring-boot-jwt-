@@ -1,4 +1,4 @@
-package com.crackit.SpringSecurityJWT.user;
+package com.crackit.springsecurityjwt.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

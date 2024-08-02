@@ -1,13 +1,16 @@
-package com.crackit.SpringSecurityJWT.controller;
+package com.crackit.springsecurityjwt.controller;
 
-import com.crackit.SpringSecurityJWT.service.AuthenticationService;
-import com.crackit.SpringSecurityJWT.user.request.LoginRequest;
-import com.crackit.SpringSecurityJWT.user.request.RegisterRequest;
+import com.crackit.springsecurityjwt.service.AuthenticationService;
+import com.crackit.springsecurityjwt.user.reponse.GeneralResponse;
+import com.crackit.springsecurityjwt.user.reponse.Response;
+import com.crackit.springsecurityjwt.user.request.LoginRequest;
+import com.crackit.springsecurityjwt.user.request.RegisterRequest;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
@@ -30,7 +33,7 @@ public class AuthController {
                     )
             )
     )
-    public Map<String,String> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<Response> login(@RequestBody LoginRequest loginRequest) {
         return authenticationService.loginUser(loginRequest.getEmail(), loginRequest.getPassword());
     }
 
@@ -45,7 +48,7 @@ public class AuthController {
                     )
             )
     )
-    public Map<String, String> register(
+    public ResponseEntity<Response> register(
             @RequestBody RegisterRequest authenticationRequest
     ) {
         System.out.println("Registering user");

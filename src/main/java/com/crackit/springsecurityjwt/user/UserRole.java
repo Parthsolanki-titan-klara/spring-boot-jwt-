@@ -1,4 +1,4 @@
-package com.crackit.SpringSecurityJWT.user;
+package com.crackit.springsecurityjwt.user;
 
 public enum UserRole {
     USER,

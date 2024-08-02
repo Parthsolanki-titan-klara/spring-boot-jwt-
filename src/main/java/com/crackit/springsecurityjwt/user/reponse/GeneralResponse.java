@@ -1,10 +1,9 @@
-package com.crackit.SpringSecurityJWT.user.reponse;
+package com.crackit.springsecurityjwt.user.reponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 
 import java.util.Date;
 
@@ -12,7 +11,7 @@ import java.util.Date;
 @Builder
 @RequiredArgsConstructor
 @AllArgsConstructor
-public class GeneralResponse {
+public class GeneralResponse implements Response {
     private String message;
     private Date timeStamp;
 
