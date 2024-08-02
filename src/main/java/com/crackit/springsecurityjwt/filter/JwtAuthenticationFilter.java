@@ -1,6 +1,6 @@
-package com.crackit.SpringSecurityJWT.filter;
+package com.crackit.springsecurityjwt.filter;
 
-import com.crackit.SpringSecurityJWT.service.JwtService;
+import com.crackit.springsecurityjwt.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

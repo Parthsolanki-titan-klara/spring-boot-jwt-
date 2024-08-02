@@ -1,6 +1,6 @@
-package com.crackit.SpringSecurityJWT.user.request;
+package com.crackit.springsecurityjwt.user.request;
 
-import com.crackit.SpringSecurityJWT.user.UserRole;
+import com.crackit.springsecurityjwt.user.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

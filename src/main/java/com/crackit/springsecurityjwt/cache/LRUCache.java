@@ -1,4 +1,4 @@
-package com.crackit.SpringSecurityJWT.cache;
+package com.crackit.springsecurityjwt.cache;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

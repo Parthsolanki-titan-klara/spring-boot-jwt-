@@ -1,4 +1,4 @@
-package com.crackit.SpringSecurityJWT.user.reponse;
+package com.crackit.springsecurityjwt.user.reponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 @Builder
 @RequiredArgsConstructor
 @AllArgsConstructor
-public class AuthenticationService {
-    private String token;
+public class AuthResponse implements Response {
+    private String accessToken;
+    private String refreshToken;
 }

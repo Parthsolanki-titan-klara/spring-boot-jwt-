@@ -1,5 +1,6 @@
-package com.crackit.SpringSecurityJWT.service;
+package com.crackit.springsecurityjwt.service;
 
+import com.crackit.springsecurityjwt.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -46,10 +47,14 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(UserDetails userDetails){
-        System.out.println("Generating token");
-        return generateToken(new HashMap<>(), userDetails);
+    public String generateToken(User user){
+        return generateToken(new HashMap<>(), user);
     }
+
+    public String generateRefreshToken(User user){
+        return generateRefreshToken(new HashMap<>(), user);
+    }
+
     public Boolean isTokenValid(
             String jwtToken,
             UserDetails userDetails) {
@@ -73,17 +78,37 @@ public class JwtService {
     }
 
     public String generateToken(
-            Map<String, Object> extraClaims,
-            UserDetails userDetails )
+            Map<String, String> extraClaims,
+            User user )
     {
-        System.out.println("Generating token in second method");
-        System.out.println("User details: "+userDetails.getUsername());
+        System.out.println("Generating token..........");
+        String userName = user.getFirstName() + " " + user.getLastName();
+        extraClaims.put("userName", userName );
+        extraClaims.put("role",user.getUserRole().toString());
         return Jwts.builder()
                 .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
+                .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 2))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+
+    public String generateRefreshToken(
+            Map<String, String> extraClaims,
+            User user )
+    {
+        System.out.println("Generating Refresh token..............");
+        String userName = user.getFirstName() + " " + user.getLastName();
+        extraClaims.put("userName", userName );
+        extraClaims.put("role",user.getUserRole().toString());
+        return Jwts.builder()
+                .setClaims(extraClaims)
+                .setSubject(user.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 5))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
 }

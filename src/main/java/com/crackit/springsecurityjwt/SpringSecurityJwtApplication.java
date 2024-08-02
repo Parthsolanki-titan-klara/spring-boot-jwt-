@@ -1,4 +1,4 @@
-package com.crackit.SpringSecurityJWT;
+package com.crackit.springsecurityjwt;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
