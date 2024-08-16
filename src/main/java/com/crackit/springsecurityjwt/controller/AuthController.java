@@ -22,6 +22,7 @@ public class AuthController {
 
     private final AuthenticationService authenticationService;
 
+//    @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*")
     @PostMapping("/api/v1/login")
     @ApiResponse(
             responseCode = "200",
@@ -37,6 +38,7 @@ public class AuthController {
         return authenticationService.loginUser(loginRequest.getEmail(), loginRequest.getPassword());
     }
 
+//    @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*")
     @PostMapping(value = "api/v1/register", consumes = "application/json", produces = "application/json")
     @ApiResponse(
             responseCode = "200",

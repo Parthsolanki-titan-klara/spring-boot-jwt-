@@ -37,7 +37,6 @@ public class AuthControllerWithTokenValidation {
         String userName = jwtService.extractUserName(token);
         logger.info("Token: {}, UserName: {}", token, userName);
 
-
         try {
             Boolean isUserAuthenticated = jwtService.isTokenValidOrNot(token, userName);
             if (isUserAuthenticated) {

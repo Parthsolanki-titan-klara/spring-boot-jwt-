@@ -1,0 +1,8 @@
+FROM mysql:8.0
+
+# Set environment variables for MySQL
+ENV MYSQL_ROOT_PASSWORD=Avdevs@123
+ENV MYSQL_DATABASE=tailor
+
+# Expose the MySQL port
+EXPOSE 4300
