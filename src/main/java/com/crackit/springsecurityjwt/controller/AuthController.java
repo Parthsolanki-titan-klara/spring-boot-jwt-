@@ -1,15 +1,21 @@
 package com.crackit.springsecurityjwt.controller;
 
 import com.crackit.springsecurityjwt.service.AuthenticationService;
+import com.crackit.springsecurityjwt.service.JwtService;
 import com.crackit.springsecurityjwt.user.reponse.GeneralResponse;
 import com.crackit.springsecurityjwt.user.reponse.Response;
 import com.crackit.springsecurityjwt.user.request.LoginRequest;
 import com.crackit.springsecurityjwt.user.request.RegisterRequest;
+import com.crackit.springsecurityjwt.user.request.ResetPasswordRequest;
+import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
@@ -21,7 +27,7 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthenticationService authenticationService;
-
+    private final JwtService jwtService;
 //    @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*")
     @PostMapping("/api/v1/login")
     @ApiResponse(
@@ -55,5 +61,41 @@ public class AuthController {
     ) {
         System.out.println("Registering user");
         return authenticationService.register(authenticationRequest);
+    }
+
+    @PostMapping(value = "/api/v1/reset-password", consumes = "application/json", produces = "application/json")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Password successfully reset",
+            content = @Content(
+                    mediaType = "application/json",
+                    examples = @ExampleObject(
+                            value = "{\"message\":\"Password reset successful\"}"
+                    )
+            )
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<Response> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest, HttpServletRequest httpServletRequest) {
+        String authHeader = httpServletRequest.getHeader("Authorization");
+        System.out.println("authHeader : " + authHeader);
+        String token = extractToken(authHeader);
+        System.out.println("token in main controller : " + token);
+        if (token == null) {
+            return authenticationService.createResponse("No token provided", HttpStatus.UNAUTHORIZED);
+        }
+
+        String userName = jwtService.extractUserName(token);
+        System.out.println("Token: " + token + ", UserName: " + userName);
+
+        return  authenticationService.updatePassword(resetPasswordRequest.getNewPassword() , resetPasswordRequest.getConfirmPassword());
+
+    }
+    private String extractToken(String tokenHeader) {
+        if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
+            String token = tokenHeader.substring(7);
+            System.out.println("Extract token : " + token);
+            return token;
+        }
+        return null;
     }
 }

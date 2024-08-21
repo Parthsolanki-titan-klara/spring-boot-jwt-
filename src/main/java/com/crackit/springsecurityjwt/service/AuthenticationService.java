@@ -88,6 +88,7 @@ public class AuthenticationService {
      */
     public ResponseEntity<Response> loginUser(String email, String password) {
         ResponseEntity<Response> response;
+        System.out.println("User Cache : " + userCache);
 
         // Check if the user is in the cache before attempting to authenticate
         if (!userCache.containsKey(email)) {
@@ -126,5 +127,34 @@ public class AuthenticationService {
         GeneralResponse response = new GeneralResponse(message, new Date());
         System.out.println("response : " + response);
         return new ResponseEntity<>(response, status);
+    }
+
+    public ResponseEntity<Response> updatePassword(String newPassword , String confirmPassword) {
+
+        if (!newPassword.equals(confirmPassword)) {
+            return createResponse(Constant.PASSWORD_NOT_MATCHED, HttpStatus.BAD_REQUEST);
+        }
+        // Get the authenticated user's email
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println("Email : " + email);
+
+        // Fetch the user from the database
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if (optionalUser.isEmpty()) {
+            return createResponse(Constant.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+
+        User user = optionalUser.get();
+
+        // Update the user's password
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        System.out.println("Saved User : " + user);
+
+        // Update the user in the cache
+        userCache.put(email, user);
+        System.out.println("Updated User in cache : " + userCache.get(email));
+
+        return ResponseEntity.ok(new GeneralResponse(Constant.PASSWORD_RESET_SUCCESS, new Date()));
     }
 }

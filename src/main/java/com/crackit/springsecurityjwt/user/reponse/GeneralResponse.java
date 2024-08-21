@@ -14,5 +14,4 @@ import java.util.Date;
 public class GeneralResponse implements Response {
     private String message;
     private Date timeStamp;
-
 }
