@@ -1,4 +1,4 @@
-package com.crackit.springsecurityjwt.user.request;
+package com.crackit.springsecurityjwt.user.reponse;
 
 import com.crackit.springsecurityjwt.user.UserRole;
 import lombok.AllArgsConstructor;
@@ -8,12 +8,12 @@ import lombok.RequiredArgsConstructor;
 
 @Data
 @Builder
-@AllArgsConstructor
 @RequiredArgsConstructor
-public class RegisterRequest {
+@AllArgsConstructor
+public class UserResponse implements Response {
+    private Long id;
     private String firstName;
     private String lastName;
     private String email;
-    private String password;
-    private UserRole role = UserRole.ADMIN;
+    private UserRole userRole;
 }

@@ -3,6 +3,7 @@ package com.crackit.springsecurityjwt.controller;
 import com.crackit.springsecurityjwt.service.AuthenticationService;
 import com.crackit.springsecurityjwt.service.JwtService;
 import com.crackit.springsecurityjwt.user.reponse.Response;
+import com.crackit.springsecurityjwt.user.reponse.ResponseUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 @SecurityRequirement(name = "bearerAuth")
 public class AuthControllerWithTokenValidation {
 
-    private final AuthenticationService authenticationService;
     private final JwtService jwtService;
     private static final Logger logger = LoggerFactory.getLogger(AuthControllerWithTokenValidation.class);
 
@@ -31,7 +31,7 @@ public class AuthControllerWithTokenValidation {
         String token = extractToken(authHeader);
         System.out.println("token in main controller : " + token);
         if (token == null) {
-            return authenticationService.createResponse("No token provided", HttpStatus.UNAUTHORIZED);
+            return ResponseUtil.createResponse("No token provided", HttpStatus.UNAUTHORIZED);
         }
 
         String userName = jwtService.extractUserName(token);
@@ -40,13 +40,13 @@ public class AuthControllerWithTokenValidation {
         try {
             Boolean isUserAuthenticated = jwtService.isTokenValidOrNot(token, userName);
             if (isUserAuthenticated) {
-                return authenticationService.createResponse("Access granted to protected resource", HttpStatus.OK);
+                return ResponseUtil.createResponse("Access granted to protected resource", HttpStatus.OK);
             } else {
-                return authenticationService.createResponse("Invalid token", HttpStatus.UNAUTHORIZED);
+                return ResponseUtil.createResponse("Invalid token", HttpStatus.UNAUTHORIZED);
             }
         } catch (Exception e) {
             logger.error("Token verification failed", e);
-            return authenticationService.createResponse("Token verification failed", HttpStatus.UNAUTHORIZED);
+            return ResponseUtil.createResponse("Token verification failed", HttpStatus.UNAUTHORIZED);
         }
     }
 
