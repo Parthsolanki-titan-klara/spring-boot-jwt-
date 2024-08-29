@@ -6,11 +6,9 @@ import com.crackit.springsecurityjwt.controller.AuthController;
 import com.crackit.springsecurityjwt.controller.AuthControllerWithTokenValidation;
 import com.crackit.springsecurityjwt.user.User;
 import com.crackit.springsecurityjwt.user.UserRepository;
-import com.crackit.springsecurityjwt.user.reponse.AuthResponse;
-import com.crackit.springsecurityjwt.user.reponse.GeneralResponse;
-import com.crackit.springsecurityjwt.user.reponse.LoginResponse;
-import com.crackit.springsecurityjwt.user.reponse.Response;
+import com.crackit.springsecurityjwt.user.reponse.*;
 import com.crackit.springsecurityjwt.user.request.RegisterRequest;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +46,7 @@ public class AuthenticationService {
         Optional<User> existingUser = userRepository.findByEmail(registerRequest.getEmail());
         ResponseEntity<Response> response;
         if (existingUser.isPresent()) {
-            response = createResponse(Constant.USER_ALREADY_EXISTS, HttpStatus.BAD_REQUEST);
+            response = ResponseUtil.createResponse(Constant.USER_ALREADY_EXISTS, HttpStatus.BAD_REQUEST);
         } else {
             // User does not exist, proceed with registration
             User newUser = User.builder()
@@ -92,7 +90,7 @@ public class AuthenticationService {
 
         // Check if the user is in the cache before attempting to authenticate
         if (!userCache.containsKey(email)) {
-            response = createResponse(Constant.NOT_REGISTERED_USER, HttpStatus.UNAUTHORIZED);
+            response = ResponseUtil.createResponse(Constant.NOT_REGISTERED_USER, HttpStatus.UNAUTHORIZED);
             return response;
         }
 
@@ -108,31 +106,45 @@ public class AuthenticationService {
                 String accessToken = cachedUser.getToken();
                 String refreshToken = cachedUser.getRefreshToken();
                 if (passwordEncoder.matches(password, cachedUser.getPassword())) {
+
+                    if(jwtService.isTokenExpired(accessToken)){
+                        System.out.println("Access token expired");
+                        if(jwtService.isTokenExpired(refreshToken)){
+                            System.out.println("Refresh token expired");
+                            accessToken = jwtService.generateToken(cachedUser);
+                            refreshToken = jwtService.generateRefreshToken(cachedUser);
+                            cachedUser.setToken(accessToken);
+                            cachedUser.setRefreshToken(refreshToken);
+
+                            userRepository.save(cachedUser);
+                            userCache.put(email,cachedUser);
+
+                        }else{
+                            System.out.println("Refresh token not expired");
+                            accessToken = refreshToken;
+                            cachedUser.setToken(accessToken);
+                            userCache.put(email,cachedUser);
+                        }
+                    }
+
                     response = ResponseEntity.ok(new LoginResponse(email, accessToken, refreshToken));
                 } else {
-                    response = createResponse(Constant.INVALID_CREDENTIALS, HttpStatus.UNAUTHORIZED);
+                    response = ResponseUtil.createResponse(Constant.INVALID_CREDENTIALS, HttpStatus.UNAUTHORIZED);
                 }
             } else {
-                response = createResponse(Constant.INVALID_CREDENTIALS, HttpStatus.UNAUTHORIZED);
+                response = ResponseUtil.createResponse(Constant.INVALID_CREDENTIALS, HttpStatus.UNAUTHORIZED);
             }
         } catch (AuthenticationException e) {
-            response = createResponse(Constant.INVALID_CREDENTIALS, HttpStatus.UNAUTHORIZED);
+            response = ResponseUtil.createResponse(Constant.INVALID_CREDENTIALS, HttpStatus.UNAUTHORIZED);
         }
 
         return response;
     }
 
-
-    public ResponseEntity<Response> createResponse(String message, HttpStatus status) {
-        GeneralResponse response = new GeneralResponse(message, new Date());
-        System.out.println("response : " + response);
-        return new ResponseEntity<>(response, status);
-    }
-
     public ResponseEntity<Response> updatePassword(String newPassword , String confirmPassword) {
 
         if (!newPassword.equals(confirmPassword)) {
-            return createResponse(Constant.PASSWORD_NOT_MATCHED, HttpStatus.BAD_REQUEST);
+            return ResponseUtil.createResponse(Constant.PASSWORD_NOT_MATCHED, HttpStatus.BAD_REQUEST);
         }
         // Get the authenticated user's email
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -141,7 +153,7 @@ public class AuthenticationService {
         // Fetch the user from the database
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isEmpty()) {
-            return createResponse(Constant.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+            return ResponseUtil.createResponse(Constant.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
 
         User user = optionalUser.get();
@@ -155,6 +167,6 @@ public class AuthenticationService {
         userCache.put(email, user);
         System.out.println("Updated User in cache : " + userCache.get(email));
 
-        return ResponseEntity.ok(new GeneralResponse(Constant.PASSWORD_RESET_SUCCESS, new Date()));
+        return ResponseEntity.ok(new GeneralResponse(Constant.PASSWORD_RESET_SUCCESS, new Date(), null));
     }
 }

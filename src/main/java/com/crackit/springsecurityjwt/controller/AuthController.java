@@ -4,6 +4,7 @@ import com.crackit.springsecurityjwt.service.AuthenticationService;
 import com.crackit.springsecurityjwt.service.JwtService;
 import com.crackit.springsecurityjwt.user.reponse.GeneralResponse;
 import com.crackit.springsecurityjwt.user.reponse.Response;
+import com.crackit.springsecurityjwt.user.reponse.ResponseUtil;
 import com.crackit.springsecurityjwt.user.request.LoginRequest;
 import com.crackit.springsecurityjwt.user.request.RegisterRequest;
 import com.crackit.springsecurityjwt.user.request.ResetPasswordRequest;
@@ -81,7 +82,7 @@ public class AuthController {
         String token = extractToken(authHeader);
         System.out.println("token in main controller : " + token);
         if (token == null) {
-            return authenticationService.createResponse("No token provided", HttpStatus.UNAUTHORIZED);
+            return ResponseUtil.createResponse("No token provided", HttpStatus.UNAUTHORIZED);
         }
 
         String userName = jwtService.extractUserName(token);

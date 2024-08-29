@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Builder
@@ -14,4 +15,7 @@ import java.util.Date;
 public class GeneralResponse implements Response {
     private String message;
     private Date timeStamp;
+    private List<UserResponse> userResponseList;
+
 }
+

@@ -2,7 +2,7 @@ spring:
   application:
     name: SpringSecurityJWT
   datasource:
-    url: jdbc:mysql://mysql:3306/tailor #jdbc:mysql://localhost:3306/tailor?user=root #
+    url: jdbc:mysql://mysql:3306/tailor #jdbc:mysql://mysql:3306/tailor #jdbc:mysql://localhost:3306/tailor?user=root #
     username: root
     password: Avdevs@123
   jpa:
