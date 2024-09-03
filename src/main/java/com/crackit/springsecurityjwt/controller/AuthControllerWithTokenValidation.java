@@ -1,5 +1,7 @@
 package com.crackit.springsecurityjwt.controller;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.crackit.springsecurityjwt.service.AuthenticationService;
 import com.crackit.springsecurityjwt.service.JwtService;
 import com.crackit.springsecurityjwt.user.reponse.Response;
@@ -33,8 +35,11 @@ public class AuthControllerWithTokenValidation {
         if (token == null) {
             return ResponseUtil.createResponse("No token provided", HttpStatus.UNAUTHORIZED);
         }
+        DecodedJWT jwt = JWT.decode(token);
+        String userName = jwt.getClaim("email").asString();
 
-        String userName = jwtService.extractUserName(token);
+
+//        String userName = jwtService.extractUserName(token);
         logger.info("Token: {}, UserName: {}", token, userName);
 
         try {

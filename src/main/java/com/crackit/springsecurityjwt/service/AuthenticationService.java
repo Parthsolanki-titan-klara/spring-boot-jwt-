@@ -1,5 +1,8 @@
 package com.crackit.springsecurityjwt.service;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.crackit.springsecurityjwt.cache.LRUCache;
 import com.crackit.springsecurityjwt.constant.Constant;
 import com.crackit.springsecurityjwt.controller.AuthController;
@@ -107,26 +110,6 @@ public class AuthenticationService {
                 String refreshToken = cachedUser.getRefreshToken();
                 if (passwordEncoder.matches(password, cachedUser.getPassword())) {
 
-                    if(jwtService.isTokenExpired(accessToken)){
-                        System.out.println("Access token expired");
-                        if(jwtService.isTokenExpired(refreshToken)){
-                            System.out.println("Refresh token expired");
-                            accessToken = jwtService.generateToken(cachedUser);
-                            refreshToken = jwtService.generateRefreshToken(cachedUser);
-                            cachedUser.setToken(accessToken);
-                            cachedUser.setRefreshToken(refreshToken);
-
-                            userRepository.save(cachedUser);
-                            userCache.put(email,cachedUser);
-
-                        }else{
-                            System.out.println("Refresh token not expired");
-                            accessToken = refreshToken;
-                            cachedUser.setToken(accessToken);
-                            userCache.put(email,cachedUser);
-                        }
-                    }
-
                     response = ResponseEntity.ok(new LoginResponse(email, accessToken, refreshToken));
                 } else {
                     response = ResponseUtil.createResponse(Constant.INVALID_CREDENTIALS, HttpStatus.UNAUTHORIZED);
@@ -169,4 +152,49 @@ public class AuthenticationService {
 
         return ResponseEntity.ok(new GeneralResponse(Constant.PASSWORD_RESET_SUCCESS, new Date(), null));
     }
+
+    public ResponseEntity<Response> refreshToken(String token) {
+
+        String refreshToken = extractToken(token);
+        System.out.println("Refresh token when api call : " + refreshToken);
+        if (refreshToken == null) {
+            return ResponseUtil.createResponse("No refresh token provided", HttpStatus.UNAUTHORIZED);
+        }
+
+        if (jwtService.isTokenExpired(refreshToken)) {
+            return ResponseUtil.createResponse("Refresh token expired", HttpStatus.UNAUTHORIZED);
+        }
+
+        DecodedJWT jwt = JWT.decode(refreshToken);
+        String userName = jwt.getClaim("sub").asString();
+        System.out.println("User Name : " + userName);
+//        String userName = jwtService.extractUserName(refreshToken);
+        Optional<User> optionalUser = userRepository.findByEmail(userName);
+
+        if (optionalUser.isEmpty()) {
+            return ResponseUtil.createResponse("User not found", HttpStatus.NOT_FOUND);
+        }
+
+        User user = optionalUser.get();
+        String newAccessToken = jwtService.generateToken(user);
+        String newRefreshToken = jwtService.generateRefreshToken(user);
+
+        user.setToken(newAccessToken);
+        user.setRefreshToken(newRefreshToken);
+        userRepository.save(user);
+
+        userCache.put(userName, user);
+
+        return ResponseEntity.ok(new AuthResponse(newAccessToken, newRefreshToken));
+    }
+
+    private String extractToken(String tokenHeader) {
+        if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
+            String token = tokenHeader.substring(7);
+            System.out.println("Extract token : " + token);
+            return token;
+        }
+        return null;
+    }
 }
+

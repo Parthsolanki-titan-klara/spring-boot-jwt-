@@ -1,11 +1,12 @@
 package com.crackit.springsecurityjwt.service;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.crackit.springsecurityjwt.user.User;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -17,30 +18,34 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
+@Slf4j
 public class JwtService {
 
     @Value("${secret.jwt.secret-key}")
     private String SECRET;
 
-    public String extractUserName(String jwtToken) {
-        String userName = extractClaims(jwtToken, Claims::getSubject);
-        System.out.println("Extracting username from token: " + userName);
-        return extractClaims(jwtToken, Claims::getSubject);
-    }
 
-    public <T> T extractClaims(String jwtToken, Function<Claims, T> claimResolver){
-        Claims claims = extractAllClaims(jwtToken);
-        return claimResolver.apply(claims);
-    }
 
-    public Claims extractAllClaims(String jwtToken) {
-        return Jwts
-                .parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(jwtToken)
-                .getBody();
-    }
+//    public String extractUserName(String jwtToken) {
+//        String userName = extractClaims(jwtToken, Claims::getSubject);
+//        System.out.println("Extracting username from token: " + userName);
+//        return extractClaims(jwtToken, Claims::getSubject);
+//    }
+
+//    public <T> T extractClaims(String jwtToken, Function<Claims, T> claimResolver){
+//        Claims claims = extractAllClaims(jwtToken);
+//        return claimResolver.apply(claims);
+//    }
+
+//    public Claims extractAllClaims(String jwtToken) {
+//
+//        return Jwts
+//                .parserBuilder()
+//                .setSigningKey(getSigningKey())
+//                .build()
+//                .parseClaimsJws(jwtToken)
+//                .getBody();
+//    }
 
     private Key getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET);
@@ -58,24 +63,33 @@ public class JwtService {
     public Boolean isTokenValid(
             String jwtToken,
             UserDetails userDetails) {
-        String username = extractUserName(jwtToken);
+        DecodedJWT jwt = JWT.decode(jwtToken);
+        String username = jwt.getSubject();
+//        String username = extractUserName(jwtToken);
         return username.equals(userDetails.getUsername()) && !isTokenExpired(jwtToken);
     }
 
     public Boolean isTokenValidOrNot(
             String jwtToken,
             String userName) {
-        String username = extractUserName(jwtToken);
+        DecodedJWT jwt = JWT.decode(jwtToken);
+        String username = jwt.getSubject();
+//        String username = extractUserName(jwtToken);
         return username.equals(userName) && !isTokenExpired(jwtToken);
     }
 
-    boolean isTokenExpired(String jwtToken) {
-        return extractExpiration(jwtToken).before(new Date());
+    public boolean isTokenExpired(String jwtToken) {
+        DecodedJWT jwt = JWT.decode(jwtToken);
+        if(jwt.getExpiresAt().before(new Date())){
+            log.error("JWT token is expired");
+            return true;
+        }
+        return false;
     }
 
-    private Date extractExpiration(String jwtToken) {
-        return extractClaims(jwtToken, Claims::getExpiration);
-    }
+//    private Date extractExpiration(String jwtToken) {
+//        return extractClaims(jwtToken, Claims::getExpiration);
+//    }
 
     public String generateToken(
             Map<String, String> extraClaims,
@@ -89,7 +103,7 @@ public class JwtService {
                 .setClaims(extraClaims)
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 5)) // 12 hours expire token time
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 )) // 12 hours expire token time
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -106,14 +120,19 @@ public class JwtService {
                 .setClaims(extraClaims)
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 5))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public boolean isUserAdmin(String jwtToken) {
-        Claims claims = extractAllClaims(jwtToken);
-        String role = claims.get("role", String.class);
+
+
+//        Claims claims = extractAllClaims(jwtToken);
+//        String role = claims.get("role", String.class);
+
+        DecodedJWT jwt = JWT.decode(jwtToken);
+        String role = jwt.getClaim("role").asString();
         return "ADMIN".equals(role);
     }
 

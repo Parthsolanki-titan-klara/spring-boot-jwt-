@@ -1,7 +1,10 @@
 package com.crackit.springsecurityjwt.controller;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.crackit.springsecurityjwt.service.AuthenticationService;
 import com.crackit.springsecurityjwt.service.JwtService;
+import com.crackit.springsecurityjwt.user.User;
 import com.crackit.springsecurityjwt.user.reponse.GeneralResponse;
 import com.crackit.springsecurityjwt.user.reponse.Response;
 import com.crackit.springsecurityjwt.user.reponse.ResponseUtil;
@@ -84,13 +87,34 @@ public class AuthController {
         if (token == null) {
             return ResponseUtil.createResponse("No token provided", HttpStatus.UNAUTHORIZED);
         }
-
-        String userName = jwtService.extractUserName(token);
+        DecodedJWT jwt = JWT.decode(token);
+        String userName = jwt.getSubject();
+//        String userName = jwtService.extractUserName(token);
         System.out.println("Token: " + token + ", UserName: " + userName);
 
         return  authenticationService.updatePassword(resetPasswordRequest.getNewPassword() , resetPasswordRequest.getConfirmPassword());
 
     }
+
+    // Add the following method to the `AuthController` class
+
+    @PostMapping("/api/v1/refresh-token")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Successfully refreshed token",
+            content = @Content(
+                    mediaType = "application/json",
+                    examples = @ExampleObject(
+                            value = "{\"accessToken\":\"newAccessToken\", \"refreshToken\":\"newRefreshToken\"}"
+                    )
+            )
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<Response> refreshToken(HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        return authenticationService.refreshToken(token);
+    }
+
     private String extractToken(String tokenHeader) {
         if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
             String token = tokenHeader.substring(7);
