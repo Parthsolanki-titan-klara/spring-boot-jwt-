@@ -46,16 +46,8 @@ public class UserController {
     public ResponseEntity<Response> fetchUserByEmail(@RequestParam String email, HttpServletRequest httpServletRequest) {
         String authHeader = httpServletRequest.getHeader("Authorization");
         System.out.println("authHeader : " + authHeader);
-        String token = extractToken(authHeader).toString();
+        String token = extractToken(authHeader);
         System.out.println("token in main controller : " + token);
-        if (token == null) {
-            return ResponseUtil.createResponse("No token provided", HttpStatus.UNAUTHORIZED);
-        }
-        DecodedJWT jwt = JWT.decode(token);
-        String userName = jwt.getClaim("email").asString();
-
-//        String userName = jwtService.extractUserName(token);
-        System.out.println("Token: " + token + ", UserName: " + userName);
 
         return userService.getUserByEmail(email);
     }

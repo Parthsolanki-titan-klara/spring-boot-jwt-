@@ -49,7 +49,7 @@ public class AuthenticationService {
         Optional<User> existingUser = userRepository.findByEmail(registerRequest.getEmail());
         ResponseEntity<Response> response;
         if (existingUser.isPresent()) {
-            response = ResponseUtil.createResponse(Constant.USER_ALREADY_EXISTS, HttpStatus.BAD_REQUEST);
+            response = ResponseUtil.createResponse(Constant.USER_ALREADY_EXISTS, HttpStatus.CONFLICT);
         } else {
             // User does not exist, proceed with registration
             User newUser = User.builder()
@@ -59,10 +59,10 @@ public class AuthenticationService {
                     .password(passwordEncoder.encode(registerRequest.getPassword()))
                     .userRole(registerRequest.getRole())
                     .build();
-            String jwtToken = jwtService.generateToken(newUser);
-            String refreshJwtToken = jwtService.generateRefreshToken(newUser);
-            newUser.setToken(jwtToken);
-            newUser.setRefreshToken(refreshJwtToken);
+//            String jwtToken = jwtService.generateToken(newUser);
+//            String refreshJwtToken = jwtService.generateRefreshToken(newUser);
+//            newUser.setToken(jwtToken);
+//            newUser.setRefreshToken(refreshJwtToken);
             userRepository.save(newUser);
 
             System.out.println("New User: " + newUser);
@@ -71,9 +71,9 @@ public class AuthenticationService {
             userCache.put(registerRequest.getEmail(), newUser);
 
             User cachedUser = userCache.get(registerRequest.getEmail());
-
             System.out.println("Cached User at register time : " + cachedUser);
-            return ResponseEntity.ok(new AuthResponse(jwtToken, refreshJwtToken));
+
+            return ResponseEntity.ok(new RegisterResponse(newUser.getFirstName(), newUser.getLastName(), newUser.getEmail(), newUser.getUserRole()));
 
         }
         return response;
@@ -106,10 +106,18 @@ public class AuthenticationService {
             if (authentication.isAuthenticated()) {
                 User cachedUser = userCache.get(email);
                 System.out.println("Cached User at login time : " + cachedUser);
-                String accessToken = cachedUser.getToken();
-                String refreshToken = cachedUser.getRefreshToken();
+//
                 if (passwordEncoder.matches(password, cachedUser.getPassword())) {
+                    String accessToken = jwtService.generateToken(cachedUser);
+                    System.out.println("Generating access token at login time : " + accessToken);
+                    String refreshToken = jwtService.generateRefreshToken(cachedUser);
+                    System.out.println("Generating refresh token at login time : " + refreshToken);
 
+
+                    cachedUser.setToken(accessToken);
+                    cachedUser.setRefreshToken(refreshToken);
+                    userRepository.save(cachedUser);
+                    System.out.println("Saved User : " + cachedUser);
                     response = ResponseEntity.ok(new LoginResponse(email, accessToken, refreshToken));
                 } else {
                     response = ResponseUtil.createResponse(Constant.INVALID_CREDENTIALS, HttpStatus.UNAUTHORIZED);
@@ -162,7 +170,7 @@ public class AuthenticationService {
         }
 
         if (jwtService.isTokenExpired(refreshToken)) {
-            return ResponseUtil.createResponse("Refresh token expired", HttpStatus.UNAUTHORIZED);
+            return ResponseUtil.createResponse("Refresh token expired. Please log in again.", HttpStatus.UNAUTHORIZED);
         }
 
         DecodedJWT jwt = JWT.decode(refreshToken);
